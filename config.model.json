@@ -1,0 +1,13 @@
+{
+  "your_name": "Jake Wharton",
+  "smtp_config": {
+    "host": "HOST",
+    "port": "PORT",
+    "username": "EMAIL",
+    "password": "PASSWORD"
+  },
+  "superior": {
+    "name": "John Doe",
+    "email": "john.doe@email.com"
+  }
+}
