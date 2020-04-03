@@ -23,13 +23,14 @@ object InputUtils {
         return value
     }
 
-    fun getInt(prompt: String, lowerBound: Int, upperBound: Int, but: Array<Int>? = null): Int {
+    fun getInt(prompt: String, lowerBound: Int, upperBound: Int, but: Array<Int> = arrayOf()): Int {
         print("$prompt :")
 
         val sVal = scanner.nextLine()
         try {
             val value = sVal.toInt()
-            if (but?.contains(value) == false && (value < lowerBound || value > upperBound)) {
+            if (!but.contains(value) && (value < lowerBound || value > upperBound)) {
+                // error
                 println("Input must between $lowerBound and $upperBound")
                 return getInt(prompt, lowerBound, upperBound)
             }

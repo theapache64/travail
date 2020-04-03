@@ -1,6 +1,9 @@
 package com.theapache64.travail.utils
 
 import java.lang.IllegalArgumentException
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.math.roundToInt
 
 object TimeUtils {
     fun intToTime(i: Int): String {
@@ -35,4 +38,24 @@ object TimeUtils {
         return timeString.replace(":", "").toInt()
     }
 
+    fun stringToTime(timeString: String): String {
+
+        return if (timeString.contains(".")) {
+            // both hour and minutes
+            val timeSplit = timeString.split(".")
+            val hours = timeSplit[0].toInt()
+            val minutes = ("0.${timeSplit[1]}".toFloat() * 60).roundToInt()
+            intToTime("$hours$minutes".toInt())
+        } else {
+            // only hour
+            val hours = timeString.toInt()
+            intToTime("$hours".toInt())
+
+        }
+    }
+
+    private val timeFormat = SimpleDateFormat("HH:mm")
+    fun toTime(calendar: Calendar): String {
+        return timeFormat.format(calendar.time)
+    }
 }

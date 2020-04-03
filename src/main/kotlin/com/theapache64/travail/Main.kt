@@ -7,39 +7,42 @@ import com.theapache64.travail.utils.DateUtils
 import com.theapache64.travail.utils.InputUtils
 import com.theapache64.travail.utils.MailHelper
 import com.theapache64.travail.utils.TimeUtils.intToTime
+import com.theapache64.travail.utils.TimeUtils.stringToTime
 import com.theapache64.travail.utils.TimeUtils.timeToInt
+import java.lang.IllegalArgumentException
 
 class Main
 
 
 private const val DAY_END = 2359
+private const val MODE_FROM_TO = 1
+private const val MODE_FROM_TIME = 2
 
 fun main(args: Array<String>) {
 
-    // consts
-    val tasks = mutableListOf<Task>()
-    while (true) {
+    val mode = InputUtils.getInt(
+        """
+            Choose mode
+            $MODE_FROM_TO) From To Mode
+            $MODE_FROM_TIME) From Hour Mode
+            
+            Choose
+        """.trimIndent(),
+        1,
+        2
+    )
 
-        val from = if (tasks.isEmpty()) {
-            intToTime(verifyTime { InputUtils.getInt("From", 0, DAY_END) }) // 23:59
-        } else {
-            tasks.last().to
+    val tasks = when (mode) {
+        MODE_FROM_TO -> {
+            startFromToMode()
         }
 
-        val toMsg = if (tasks.isEmpty()) {
-            "➡️ To"
-        } else {
-            "➡️ From $from to"
+        MODE_FROM_TIME -> {
+            startFromTimeMode()
         }
 
-        val to = verifyTime { InputUtils.getInt(toMsg, removeTrailingZero(timeToInt(from)), DAY_END, arrayOf(-1)) }
-
-        if (to == -1) {
-            println("Ending day")
-            break
-        } else {
-            val task = InputUtils.getString("Task", true)
-            tasks.add(Task(from, intToTime(to), task))
+        else -> {
+            throw IllegalArgumentException("Undefined mode `$mode`")
         }
     }
 
@@ -74,14 +77,83 @@ fun main(args: Array<String>) {
     }
 }
 
+fun startFromTimeMode(): List<Task> {
+    val tasks = mutableListOf<Task>()
+    while (true) {
+        val from = if (tasks.isEmpty()) {
+            stringToTime(validateTimeString { InputUtils.getString("From", true) })
+        } else {
+            tasks.last().to
+        }
+
+        val toMsg = if (tasks.isEmpty()) {
+            "➡️ To"
+        } else {
+            "➡️ From $from to"
+        }
+    }
+    return tasks
+}
+
+fun validateTimeString(readTime: () -> String): String {
+    val timeString = readTime()
+    if (timeString.contains(".")) {
+        // has minutes
+        val timeSplit = timeString.split(".")
+        val hourInt = timeSplit[0].toInt()
+        if (hourInt >= 24) {
+            return hourErrorString { readTime() }
+        }
+    } else {
+        // only hour
+        val hourInt = timeString.toInt()
+        if (hourInt >= 24) {
+            return hourErrorString { readTime() }
+        }
+    }
+    return timeString.trim()
+}
+
+private fun startFromToMode(): List<Task> {
+
+    // consts
+    val tasks = mutableListOf<Task>()
+    while (true) {
+
+        val from = if (tasks.isEmpty()) {
+            intToTime(verifyTimeInt { InputUtils.getInt("From", 0, DAY_END) }) // 23:59
+        } else {
+            tasks.last().to
+        }
+
+        val toMsg = if (tasks.isEmpty()) {
+            "➡️ To"
+        } else {
+            "➡️ From $from to"
+        }
+
+        val to = verifyTimeInt { InputUtils.getInt(toMsg, removeTrailingZero(timeToInt(from)), DAY_END, arrayOf(-1)) }
+
+        if (to == -1) {
+            println("Ending day")
+            break
+        } else {
+            val task = InputUtils.getString("Task", true)
+            tasks.add(Task(from, intToTime(to), task))
+        }
+    }
+
+    return tasks
+}
+
 private val TRAIL_ZERO_REGEX = "[0]+\$".toRegex()
 
 fun removeTrailingZero(int: Int): Int {
     return int.toString().replace(TRAIL_ZERO_REGEX, "").toInt()
 }
 
-fun verifyTime(verifyMethod: () -> Int): Int {
-    val time = verifyMethod()
+fun verifyTimeInt(readTime: () -> Int): Int {
+    val time = readTime()
 
     if (time == -1) {
         return time
@@ -89,11 +161,11 @@ fun verifyTime(verifyMethod: () -> Int): Int {
 
     val timeString = time.toString()
     if (timeString.length == 2 && time >= 24) {
-        return hourError(verifyMethod)
+        return hourError(readTime)
     } else if (timeString.length == 3) {
         val minutes = timeString.substring(1).toInt()
         if (minutes >= 60) {
-            return minutesError(verifyMethod)
+            return minutesError(readTime)
         }
     } else if (timeString.length == 4) {
 
@@ -101,9 +173,9 @@ fun verifyTime(verifyMethod: () -> Int): Int {
         val minutes = timeString.substring(3).toInt()
 
         if (hrs >= 24) {
-            return hourError(verifyMethod)
+            return hourError(readTime)
         } else if (minutes >= 60) {
-            return minutesError(verifyMethod)
+            return minutesError(readTime)
         }
     }
 
@@ -112,10 +184,15 @@ fun verifyTime(verifyMethod: () -> Int): Int {
 
 private fun minutesError(verifyMethod: () -> Int): Int {
     println("Minutes must be less than 60")
-    return verifyTime(verifyMethod)
+    return verifyTimeInt(verifyMethod)
 }
 
 private fun hourError(verifyMethod: () -> Int): Int {
     println("Hour must be less than 24")
-    return verifyTime(verifyMethod)
+    return verifyTimeInt(verifyMethod)
+}
+
+private fun hourErrorString(verifyMethod: () -> String): String {
+    println("Hour must be less than 24")
+    return validateTimeString(verifyMethod)
 }

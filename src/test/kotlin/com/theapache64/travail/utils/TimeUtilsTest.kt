@@ -2,6 +2,8 @@ package com.theapache64.travail.utils
 
 import com.winterbe.expekt.should
 import org.junit.Test
+import java.text.SimpleDateFormat
+import java.util.*
 
 class TimeUtilsTest {
     @Test
@@ -24,5 +26,14 @@ class TimeUtilsTest {
         TimeUtils.timeToInt("11:30").should.equal(1130)
         TimeUtils.timeToInt("12:30").should.equal(1230)
         TimeUtils.timeToInt("16:00").should.equal(1600)
+    }
+
+    @Test
+    fun timeStringToDateTestSuccess() {
+        TimeUtils.stringToTime("1").should.equal("01:00")
+        TimeUtils.stringToTime("1.5").should.equal("01:30")
+        TimeUtils.stringToTime("12").should.equal("12:00")
+        TimeUtils.stringToTime("16.25").should.equal("16:15")
+        TimeUtils.stringToTime("16.5").should.equal("16:30")
     }
 }

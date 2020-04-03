@@ -10,7 +10,7 @@ object ReportGenerator {
     private val inputTimeFormat = SimpleDateFormat("HH:mm")
     private val outputTimeFormat = SimpleDateFormat("hh:mm aa")
 
-    fun generateReport(config: Config, tasks: MutableList<Task>): String {
+    fun generateReport(config: Config, tasks: List<Task>): String {
         val tasksString = generateTasks(tasks)
         return """
             Hi ${config.superior.name}
@@ -24,7 +24,7 @@ object ReportGenerator {
         """.trimIndent()
     }
 
-    private fun generateTasks(tasks: MutableList<Task>): String {
+    private fun generateTasks(tasks: List<Task>): String {
         val sb = StringBuilder()
         for (task in tasks) {
             val fromTime = to12Hours(task.from)
