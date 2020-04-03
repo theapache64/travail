@@ -45,7 +45,11 @@ object TimeUtils {
             val timeSplit = timeString.split(".")
             val hours = timeSplit[0].toInt()
             val minutes = ("0.${timeSplit[1]}".toFloat() * 60).roundToInt()
-            intToTime("$hours$minutes".toInt())
+            if (hours > 0) {
+                intToTime("$hours$minutes".toInt())
+            } else {
+                "00:$minutes"
+            }
         } else {
             // only hour
             val hours = timeString.toInt()
@@ -57,5 +61,18 @@ object TimeUtils {
     private val timeFormat = SimpleDateFormat("HH:mm")
     fun toTime(calendar: Calendar): String {
         return timeFormat.format(calendar.time)
+    }
+
+    fun add(from: String, timeTook: String): String {
+        val fromDate = timeFormat.parse(from)
+        val fromCal = Calendar.getInstance().apply {
+            time = fromDate
+        }
+        val timeSplit = timeTook.split(":")
+        val hours = timeSplit[0].toInt()
+        val minutes = timeSplit[1].toInt()
+        fromCal.add(Calendar.HOUR_OF_DAY, hours)
+        fromCal.add(Calendar.MINUTE, minutes)
+        return timeFormat.format(fromCal.time)
     }
 }

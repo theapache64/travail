@@ -35,5 +35,15 @@ class TimeUtilsTest {
         TimeUtils.stringToTime("12").should.equal("12:00")
         TimeUtils.stringToTime("16.25").should.equal("16:15")
         TimeUtils.stringToTime("16.5").should.equal("16:30")
+        TimeUtils.stringToTime("0.5").should.equal("00:30")
+    }
+
+    @Test
+    fun timeAddTestSuccess() {
+        TimeUtils.add("01:00", "03:30").should.equal("04:30")
+        TimeUtils.add("04:00", "03:15").should.equal("07:15")
+        TimeUtils.add("14:00", "02:00").should.equal("16:00")
+        TimeUtils.add("14:00", "00:30").should.equal("14:30")
     }
 }
+

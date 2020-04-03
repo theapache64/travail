@@ -6,6 +6,7 @@ import com.theapache64.travail.models.Task
 import com.theapache64.travail.utils.DateUtils
 import com.theapache64.travail.utils.InputUtils
 import com.theapache64.travail.utils.MailHelper
+import com.theapache64.travail.utils.TimeUtils
 import com.theapache64.travail.utils.TimeUtils.intToTime
 import com.theapache64.travail.utils.TimeUtils.stringToTime
 import com.theapache64.travail.utils.TimeUtils.timeToInt
@@ -87,16 +88,37 @@ fun startFromTimeMode(): List<Task> {
         }
 
         val toMsg = if (tasks.isEmpty()) {
-            "➡️ To"
+            "➡️ Time took"
         } else {
-            "➡️ From $from to"
+            "➡️ From $from, time took"
+        }
+
+        val timeTook = validateTimeString {
+            InputUtils.getString(
+                toMsg,
+                true
+            )
+        }
+
+        if (timeTook == "-1") {
+            println("Ending day")
+            break
+        } else {
+            val to = TimeUtils.add(from, stringToTime(timeTook))
+            val task = InputUtils.getString("Task", true)
+            tasks.add(Task(from, to, task))
         }
     }
     return tasks
 }
 
+
 fun validateTimeString(readTime: () -> String): String {
     val timeString = readTime()
+    if (timeString == "-1") {
+        return timeString
+    }
+
     if (timeString.contains(".")) {
         // has minutes
         val timeSplit = timeString.split(".")
