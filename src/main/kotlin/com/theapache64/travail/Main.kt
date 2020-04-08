@@ -11,6 +11,7 @@ import com.theapache64.travail.utils.TimeUtils.intToTime
 import com.theapache64.travail.utils.TimeUtils.stringToTime
 import com.theapache64.travail.utils.TimeUtils.timeToInt
 import java.lang.IllegalArgumentException
+import java.lang.NumberFormatException
 
 class Main
 
@@ -114,26 +115,34 @@ fun startFromTimeMode(): List<Task> {
 
 
 fun validateTimeString(readTime: () -> String): String {
+
     val timeString = readTime()
     if (timeString == "-1") {
         return timeString
     }
 
-    if (timeString.contains(".")) {
-        // has minutes
-        val timeSplit = timeString.split(".")
-        val hourInt = timeSplit[0].toInt()
-        if (hourInt >= 24) {
-            return hourErrorString { readTime() }
+    try {
+        if (timeString.contains(".")) {
+            // has minutes
+            val timeSplit = timeString.split(".")
+            val hourInt = timeSplit[0].toInt()
+            if (hourInt >= 24) {
+                return hourErrorString { readTime() }
+            }
+        } else {
+            // only hour
+            val hourInt = timeString.toInt()
+            if (hourInt >= 24) {
+                return hourErrorString { readTime() }
+            }
         }
-    } else {
-        // only hour
-        val hourInt = timeString.toInt()
-        if (hourInt >= 24) {
-            return hourErrorString { readTime() }
-        }
+
+        return timeString.trim()
+
+    } catch (e: NumberFormatException) {
+        println("Invalid time")
+        return validateTimeString { readTime() }
     }
-    return timeString.trim()
 }
 
 private fun startFromToMode(): List<Task> {
@@ -182,26 +191,30 @@ fun verifyTimeInt(readTime: () -> Int): Int {
     }
 
     val timeString = time.toString()
-    if (timeString.length == 2 && time >= 24) {
-        return hourError(readTime)
-    } else if (timeString.length == 3) {
-        val minutes = timeString.substring(1).toInt()
-        if (minutes >= 60) {
-            return minutesError(readTime)
-        }
-    } else if (timeString.length == 4) {
-
-        val hrs = timeString.substring(0, 2).toInt()
-        val minutes = timeString.substring(3).toInt()
-
-        if (hrs >= 24) {
+    try {
+        if (timeString.length == 2 && time >= 24) {
             return hourError(readTime)
-        } else if (minutes >= 60) {
-            return minutesError(readTime)
-        }
-    }
+        } else if (timeString.length == 3) {
+            val minutes = timeString.substring(1).toInt()
+            if (minutes >= 60) {
+                return minutesError(readTime)
+            }
+        } else if (timeString.length == 4) {
 
-    return time
+            val hrs = timeString.substring(0, 2).toInt()
+            val minutes = timeString.substring(3).toInt()
+
+            if (hrs >= 24) {
+                return hourError(readTime)
+            } else if (minutes >= 60) {
+                return minutesError(readTime)
+            }
+        }
+        return time
+    } catch (e: NumberFormatException) {
+        println("Invalid time")
+        return verifyTimeInt { readTime() }
+    }
 }
 
 private fun minutesError(verifyMethod: () -> Int): Int {
